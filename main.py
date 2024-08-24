@@ -10,12 +10,6 @@ CSVFILEPATH = r'C:\Program Files (x86)\PaperCut Print Logger\logs\csv\papercut-p
 REMOTEFOLDER = r'\\192.168.0.175\Sistemas\PaperCut-logs'
 
 def main():
-    printersList = getPrinterInfo()
-
-    if not printersList:
-        print("Nenhuma impressora encontrada.")
-        return
-
     stopService(SERVICENAME)
     time.sleep(5)
     
@@ -26,6 +20,11 @@ def main():
     for i in range(10):
         print(f'Aguardando {i} segundos...')
         time.sleep(i)
+    
+    printersList = getPrinterInfo()
+    if not printersList:
+        print("Nenhuma impressora encontrada.")
+        return
     
     #Encontrar todos os arquivos no diretório, excluindo os arquivos ocultos e filtrando apenas os arquivos CSV
     #https://stackoverflow.com/questions/3207219/how-do-i-list-all-files-of-a-directory

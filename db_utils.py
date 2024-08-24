@@ -1,6 +1,5 @@
 import psycopg2
 import os
-from win32com.client import Dispatch
 
 # Configurações do banco de dados
 DB_HOST = os.getenv("DB_HOST")
@@ -21,43 +20,70 @@ def connectDb():
         return conn
     except psycopg2.Error as e:
         print(f"Erro ao conectar ao banco de dados: {e}")
+        return None
 
 # Função para inserir dados no banco de dados
 def insertData(file, printerList):
     # Conecta ao banco de dados
     conn = connectDb()
 
-    # Cria um cursor para executar as consultas
-    cursor = conn.cursor()
-    
-    # Loop para inserir cada linha do arquivo no banco de dados
-    for _, row in file.iterrows():
-        try:
-            cursor.execute("""
-                INSERT INTO printJobs (timedoc, username, pages, copies, printer, documentName, clientPC, paperSize, languageMethod, height, width, duplex, grayscale, fileSize)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
-            """, (
-                row[0],  # timedoc
-                row[1],  # username
-                row[2],  # pages
-                row[3],  # copies
-                row[4],  # printer
-                row[5],  # documentName
-                row[6],  # clientPC
-                row[7],  # paperSize
-                row[8],  # languageMethod
-                row[9],  # height
-                row[10], # width
-                row[11], # duplex
-                row[12], # grayscale
-                row[13]  # fileSize
-            ))
+    try:
+        # Cria um cursor para executar as consultas
+        cursor = conn.cursor()
+        
+        # Loop para inserir cada linha do arquivo no banco de dados
+        for _, row in file.iterrows():
+            try:
+                cdcid = None
+                cdcName = None
+                printerNameFilePosition = row.iloc[4]
+                print(f"printerName: {printerNameFilePosition}")
 
-            print(f"Inserindo dados: {row}")
-        except psycopg2.Error as e:
-            print(f"Erro ao inserir dados: {e}")
-            conn.rollback()
+                # Encontra o cdcName correspondente ao printerName
+                for printer in printerList:
+                    if printer['printerName'] == printerNameFilePosition:
+                        cdcName = str(printer['printerLocation'])
+                        print(f"cdcName: {cdcName}")
+                        break
+                
+                if cdcName:
+                    cursor.execute("""
+                        SELECT id FROM centercostprinters WHERE namecdc = %s;
+                    """, (cdcName,))
 
-    conn.commit()
-    cursor.close()
-    conn.close()
+                    result = cursor.fetchone()
+                    cdcid = result[0] if result else None
+                    print(f"cdcName {cdcName} encontrado. cdcid: {cdcid}")
+
+                # Insere os dados no banco de dados
+                cursor.execute("""
+                    INSERT INTO printJobs (cdcid, timedoc, username, pages, copies, printer, documentName, clientPC, paperSize, languageMethod, height, width, duplex, grayscale, fileSize)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+                """, (
+                    cdcid, # cdcid
+                    row.iloc[0],  # timedoc
+                    row.iloc[1],  # username
+                    row.iloc[2],  # pages
+                    row.iloc[3],  # copies
+                    row.iloc[4],  # printer
+                    row.iloc[5],  # documentName
+                    row.iloc[6],  # clientPC
+                    row.iloc[7],  # paperSize
+                    row.iloc[8],  # languageMethod
+                    row.iloc[9],  # height
+                    row.iloc[10], # width
+                    row.iloc[11], # duplex
+                    row.iloc[12], # grayscale
+                    row.iloc[13], # fileSize
+                ))
+
+                print(f"Inserindo dados: {row}")
+            except psycopg2.Error as e:
+                print(f"Erro ao inserir dados: {e}")
+                conn.rollback()
+        conn.commit()
+    except Exception as e:
+        print(f"Ocorreu um erro durante a inserção dos dados: {e}")
+    finally:
+        cursor.close()
+        conn.close()

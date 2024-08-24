@@ -29,9 +29,9 @@ def getPrinterInfo():
 
     for printer in printers:
         printer_info = {
-            "PrinterName": printer.Name,
-            "PrinterLocation": printer.Location,
-            "PrinterIP": printer.PortName
+            "printerName": printer.Name,
+            "printerLocation": printer.Location,
+            "printerIP": printer.PortName
         }
         printersList.append(printer_info)
 
