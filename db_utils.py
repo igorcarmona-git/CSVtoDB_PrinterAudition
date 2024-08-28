@@ -35,30 +35,34 @@ def insertData(file, printerList):
         for _, row in file.iterrows():
             try:
                 cdcid = None
-                cdcName = None
-                printerNameFilePosition = row.iloc[4]
+                localPrinter = 999
+                printerDriver = None
+                printerIP = None
+                printerNameFilePosition = row.iloc[4] #A coluna 4 do arquivo CSV contém o nome da impressora
                 print(f"printerName: {printerNameFilePosition}")
 
-                # Encontra o cdcName correspondente ao printerName
+                # Encontra o localPrinter correspondente ao printerName
                 for printer in printerList:
                     if printer['printerName'] == printerNameFilePosition:
-                        cdcName = str(printer['printerLocation'])
-                        print(f"cdcName: {cdcName}")
+                        localPrinter = str(printer['printerLocation'])
+                        printerIP = str(printer['printerIP'])
+                        printerDriver = str(printer['printerDriver'])
+                        print(f"localPrinter: {localPrinter}")
                         break
                 
-                if cdcName:
+                if localPrinter:
                     cursor.execute("""
-                        SELECT id FROM centercostprinters WHERE namecdc = %s;
-                    """, (cdcName,))
+                        SELECT id FROM centercostprinters WHERE id = %s;
+                    """, (localPrinter,))
 
                     result = cursor.fetchone()
                     cdcid = result[0] if result else None
-                    print(f"cdcName {cdcName} encontrado. cdcid: {cdcid}")
+                    print(f"localPrinter {localPrinter} encontrado. cdcid: {cdcid}")
 
                 # Insere os dados no banco de dados
                 cursor.execute("""
-                    INSERT INTO printJobs (cdcid, timedoc, username, pages, copies, printer, documentName, clientPC, paperSize, languageMethod, height, width, duplex, grayscale, fileSize)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+                    INSERT INTO printJobs (cdcid, timedoc, username, pages, copies, printer, printerDriver, printerIP, documentName, clientPC, paperSize, languageMethod, height, width, duplex, grayscale, fileSize)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
                 """, (
                     cdcid, # cdcid
                     row.iloc[0],  # timedoc
@@ -66,6 +70,8 @@ def insertData(file, printerList):
                     row.iloc[2],  # pages
                     row.iloc[3],  # copies
                     row.iloc[4],  # printer
+                    printerDriver,
+                    printerIP,
                     row.iloc[5],  # documentName
                     row.iloc[6],  # clientPC
                     row.iloc[7],  # paperSize
