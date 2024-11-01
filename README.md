@@ -77,6 +77,27 @@ cd CSVtoDB_PrinterAudition
 - Agendar no Agendador de Tarefas do windows com privilégios de administrador.
 - Executar conforme sua necessidade
 
+## Exemplo de indicador 1 (Análise de Quantidade de impressões por Centro de Custo)
+```sql
+--Conta a quantidade total de páginas para cada CDC
+SELECT c.namecdc, p.cdcid, sum(COALESCE(p.pages * p.copies, 0)) AS totalPages
+FROM printjobs p
+INNER JOIN centercostprinters c ON c.id = p.cdcid
+WHERE p.timedoc BETWEEN '2024-09-01' AND '2024-09-30'
+GROUP BY c.namecdc, p.cdcid 
+ORDER BY totalPages DESC;
+```
+Resultado da consulta SQL:
+![pathFile](imagesMD/querySQL.png)
+
+## Exemplo de indicador 2 (Análise de impressões feitas por usuário/hostname)
+```sql
+SELECT p.timedoc, p.username, p.documentname, p.clientPC FROM printjobs p 
+WHERE p.username LIKE 'italopavao%' ORDER BY timedoc DESC;
+```
+Resultado da consulta SQL:
+![pathFile](imagesMD/querySQL2.png)
+
 ## Contribuição
 Contribuições são bem-vindas! Sinta-se à vontade para abrir issues ou pull requests para melhorar o projeto.
 
