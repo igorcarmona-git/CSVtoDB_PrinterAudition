@@ -59,7 +59,7 @@ Caminho do arquivo gerado pelo PaperCut pela instalação padrão: C:\Program Fi
 ## Funcionalidades
 
 Este código ele faz a conexão com um banco de dados Postgres, se conecta ao WMI(Windows Management Instrumentation) do servidor de impressão. 
-Busca pelas informações de impressoras instaladas no servidor, verifica pelas tabelas `printJobs` e `centerCostPrinters` se o Local da impressora retornado para cada nome de impressora é igual ao `namecdc` da tabela `CenterCostPrinters` se for igual, é setado o ID do Centro de Custo juntamente com os dados que irão para a tabela `printJobs`.
+Busca pelas informações de impressoras instaladas no servidor, verifica pelas tabelas `printJobs` e `centerCostPrinters` se o Local da impressora retornado para cada nome de impressora é igual ao `cdcid` da tabela `CenterCostPrinters` se for igual, é setado o ID do Centro de Custo juntamente com os dados que irão para a tabela `printJobs`.
 
 Como o ID está referenciado a tabela de Centro de Custo, é possível criar indicadores e separar por Centros de Custos suas atividades para auditoria.
 
