@@ -1,4 +1,5 @@
 # Solução interna para realizar uma auditoria de impressão no servidor de PrintServer.
+Segue link de vídeo apresentando a solução: https://youtu.be/C8vHhR_xC4w
 
 Para complementar a inserção de dados no banco, utilizo o software gratuito da PaperCut (https://www.papercut.com/pt-br/). Embora ofereça informações básicas de auditoria de impressão, ele se limita a gerar um arquivo .csv a cada impressão no servidor e não possui suporte para banco de dados ou criação de indicadores. Devido ao alto custo das soluções automatizadas, a empresa optou por não investir em software pago. Assim, decidi desenvolver uma solução gratuita que possa automatizar a auditoria e gerar indicadores relevantes para a empresa juntamente com a separação de Centro de Custos.
 
