@@ -7,11 +7,12 @@ import time
 # Substitua pelos caminhos e nomes reais
 SERVICENAME = 'PCPrintLogger'
 CSVFILEPATH = r'C:\Program Files (x86)\PaperCut Print Logger\logs\csv\papercut-print-log-all-time.csv'
+#CSVMONTH = r'C:\Program Files (x86)\PaperCut Print Logger\logs\csv\monthly\papercut-print-log-2024-10.csv'
 REMOTEFOLDER = r'\\192.168.0.175\Sistemas\PaperCut-logs'
 
 def main():
     stopService(SERVICENAME)
-    time.sleep(5)
+    time.sleep(6)
     
     copyFile(CSVFILEPATH, REMOTEFOLDER)
     deleteFile(CSVFILEPATH)
@@ -48,6 +49,7 @@ def main():
         if os.path.exists(REMOTEFOLDER):
             try:
                 f = pd.read_csv(newRecentFilePath, skiprows=2, encoding='ISO-8859-1')
+                #f = pd.read_csv(CSVMONTH, skiprows=2, encoding='ISO-8859-1') #inserir mes todo
             except UnicodeDecodeError as e:
                 print(f"Erro ao ler o arquivo CSV: {e}")
                     

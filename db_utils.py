@@ -1,5 +1,6 @@
 import psycopg2
 import os
+import time
 
 # Configurações do banco de dados
 DB_HOST = os.getenv("DB_HOST")
@@ -84,6 +85,7 @@ def insertData(file, printerList):
                 ))
 
                 print(f"Inserindo dados: {row}")
+                conn.commit()
             except psycopg2.Error as e:
                 print(f"Erro ao inserir dados: {e}")
                 conn.rollback()
