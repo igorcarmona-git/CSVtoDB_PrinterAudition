@@ -1,0 +1,140 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+}
+
+enum ImportSource {
+  UPLOAD
+  FOLDER
+}
+
+enum ImportStatus {
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model User {
+  id           String        @id @default(cuid())
+  name         String?
+  email        String        @unique
+  passwordHash String        @map("password_hash")
+  role         UserRole      @default(ADMIN)
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  sessions     AuthSession[]
+
+  @@map("users")
+}
+
+model AuthSession {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique @map("token_hash")
+  userId    String   @map("user_id")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("auth_sessions")
+}
+
+model CostCenter {
+  id         String     @id @default(cuid())
+  code       String     @unique
+  name       String
+  management String?
+  active     Boolean    @default(true)
+  createdAt  DateTime   @default(now()) @map("created_at")
+  updatedAt  DateTime   @updatedAt @map("updated_at")
+  printers   Printer[]
+  printJobs  PrintJob[]
+
+  @@index([active])
+  @@map("cost_centers")
+}
+
+model Printer {
+  id           String      @id @default(cuid())
+  name         String      @unique
+  location     String?
+  ip           String?
+  driver       String?
+  costCenterId String?     @map("cost_center_id")
+  lastSyncedAt DateTime?   @map("last_synced_at")
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+  costCenter   CostCenter? @relation(fields: [costCenterId], references: [id], onDelete: SetNull)
+  printJobs    PrintJob[]
+
+  @@index([costCenterId])
+  @@index([location])
+  @@map("printers")
+}
+
+model ImportBatch {
+  id            String       @id @default(cuid())
+  source        ImportSource
+  fileName      String?      @map("file_name")
+  filePath      String?      @map("file_path")
+  status        ImportStatus @default(PROCESSING)
+  totalRows     Int          @default(0) @map("total_rows")
+  insertedRows  Int          @default(0) @map("inserted_rows")
+  duplicateRows Int          @default(0) @map("duplicate_rows")
+  failedRows    Int          @default(0) @map("failed_rows")
+  errorMessage  String?      @map("error_message")
+  startedAt     DateTime     @default(now()) @map("started_at")
+  finishedAt    DateTime?    @map("finished_at")
+  printJobs     PrintJob[]
+
+  @@index([status])
+  @@index([startedAt])
+  @@map("import_batches")
+}
+
+model PrintJob {
+  id             String       @id @default(cuid())
+  dedupeKey      String       @unique @map("dedupe_key")
+  timedoc        DateTime
+  username       String
+  pages          Int
+  copies         Int
+  totalPages     Int          @map("total_pages")
+  printerName    String       @map("printer_name")
+  printerDriver  String?      @map("printer_driver")
+  printerIP      String?      @map("printer_ip")
+  documentName   String?      @map("document_name")
+  clientPC       String?      @map("client_pc")
+  paperSize      String?      @map("paper_size")
+  languageMethod String?      @map("language_method")
+  height         String?
+  width          String?
+  duplex         String?
+  grayscale      String?
+  fileSize       String?      @map("file_size")
+  printerId      String?      @map("printer_id")
+  costCenterId   String?      @map("cost_center_id")
+  importBatchId  String?      @map("import_batch_id")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  printer        Printer?     @relation(fields: [printerId], references: [id], onDelete: SetNull)
+  costCenter     CostCenter?  @relation(fields: [costCenterId], references: [id], onDelete: SetNull)
+  importBatch    ImportBatch? @relation(fields: [importBatchId], references: [id], onDelete: SetNull)
+
+  @@index([timedoc])
+  @@index([username])
+  @@index([printerName])
+  @@index([clientPC])
+  @@index([costCenterId])
+  @@index([printerId])
+  @@index([importBatchId])
+  @@map("print_jobs")
+}
