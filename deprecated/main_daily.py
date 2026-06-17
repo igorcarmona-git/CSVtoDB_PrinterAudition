@@ -1,5 +1,5 @@
-from db_utils import insertData
-from functions_printers import getPrinterInfo
+from deprecated.db_utils import insertData
+from deprecated.functions_printers import getPrinterInfo
 import pandas as pd
 import os
 import time
